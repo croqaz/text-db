@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-# from load import load_files
+from load import load_files
 
 
 def parse_args():
@@ -16,5 +16,7 @@ def parse_args():
 
 if __name__ == '__main__':
     opts = parse_args()
-    print('CMD opts:', opts)
-    # load_files(opts.files, opts.keys)
+    print('CMD opts:', opts, '\n')
+    if not opts.keys:
+        print('Warning: The KEYS are empty!')
+    load_files(opts.files, opts.keys)
