@@ -5,23 +5,34 @@ from glob import glob
 from pathlib import Path
 from subprocess import check_output
 
+import ipdb
+
 CWD = os.getcwd()
 KEY_SEP = '-'
 
 
-def load_files(files: str, keys: list):
+def load_files(files: str, keys: list, interact=False):
+    """
+    High level discover and load JL files.
+    The params are:
+    * the key used for de-duplication
+    * the validation for one or more fields
+    * the filters for one or more fields
+    """
     data = {}
+    input_files = []
     for fpath in files:
         fpath = str(Path(fpath).expanduser().resolve())
         for fname in sorted(glob(fpath)):
+            input_files.append(fname)
             load_db_file(fname, data, keys)
-    import ipdb
-    ipdb.set_trace()
+    if interact:
+        ipdb.set_trace()
 
 
 def load_db_file(file_name: str, data: dict, keys: list):
     """
-    Loads a JL file.
+    Loads a single JL file.
     """
     t0 = time.monotonic()
     wc, _ = check_output(f'wc -l {file_name}', shell=True).strip().split()
@@ -33,7 +44,9 @@ def load_db_file(file_name: str, data: dict, keys: list):
     print(f'Loading {fsize:,} lines from "{rel_name}" ...')
 
     index = 0
+    empty_keys = 0
     local_db = {}
+
     for line in open(file_name):
         line = line.strip()
         if not line:
@@ -41,16 +54,24 @@ def load_db_file(file_name: str, data: dict, keys: list):
         try:
             item = json.loads(line)
         except Exception as err:
-            print(f'ERR loading line "{line[:35]}" from "{file_name}" : {err}')
+            print(f'ERR loading line "{line[:35]}" from "{rel_name}" : {err}')
         index += 1
         if not index % perc1:
             print('#', end='', flush=True)
-        local_db[gen_key(item, keys)] = item
+        key = gen_key(item, keys)
+        # Empty keys don't make any sense, drop them
+        if not key:
+            empty_keys += 1
+            continue
+        local_db[key] = item
 
     data.update(local_db)
     t1 = time.monotonic()
 
-    print(f'\nLoaded {len(local_db):,} items, added {len(data) - isize:,} new items in {t1-t0:.2f}s\n')
+    empty_keys_str = f' ignored {empty_keys} empty keys,' if empty_keys else ''
+
+    print(f'\nLoaded {len(local_db):,} items{empty_keys_str}, '
+          f'added {len(data) - isize:,} new items in {t1-t0:.2f}s\n')
 
 
 def gen_key(item, keys: list) -> str:

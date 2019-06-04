@@ -19,4 +19,4 @@ if __name__ == '__main__':
     print('CMD opts:', opts, '\n')
     if not opts.keys:
         print('Warning: The KEYS are empty!')
-    load_files(opts.files, opts.keys)
+    load_files(opts.files, opts.keys, opts.interact)
