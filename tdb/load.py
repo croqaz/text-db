@@ -79,10 +79,3 @@ def load_db_file(file_name: str, data: dict, keys: list, config: dict):
 
     print(f'\nLoaded {len(local_db):,} items{empty_keys_str}, '
           f'added {len(data) - isize:,} new items in {t1-t0:.2f}s\n')
-
-
-def default_gen_key(item, keys: list) -> str:
-    if keys and isinstance(keys, (list, tuple)):
-        return KEY_SEP.join(str(item.get(k, '')) for k in keys)
-    else:
-        return str(item)
