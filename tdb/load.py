@@ -11,7 +11,7 @@ CWD = os.getcwd()
 KEY_SEP = '-'
 
 
-def load_files(files: str, keys: list, interact=False):
+def load_files(files: str, keys: list, config: dict, interact=False):
     """
     High level discover and load JL files.
     The params are:
@@ -25,12 +25,12 @@ def load_files(files: str, keys: list, interact=False):
         fpath = str(Path(fpath).expanduser().resolve())
         for fname in sorted(glob(fpath)):
             input_files.append(fname)
-            load_db_file(fname, data, keys)
+            load_db_file(fname, data, keys, config)
     if interact:
         ipdb.set_trace()
 
 
-def load_db_file(file_name: str, data: dict, keys: list):
+def load_db_file(file_name: str, data: dict, keys: list, config: dict):
     """
     Loads a single JL file.
     """
@@ -39,6 +39,13 @@ def load_db_file(file_name: str, data: dict, keys: list):
     fsize = int(wc)
     isize = len(data)
     perc1 = fsize // 100
+
+    if not keys and config.get('keys') and callable(config['keys']):
+        gen_key = config['keys']
+    elif keys and isinstance(keys, (list, tuple)):
+        gen_key = lambda o: KEY_SEP.join(str(o.get(k, '')) for k in keys)
+    else:
+        gen_key = lambda o: str(o)
 
     rel_name = os.path.relpath(file_name, CWD)
     print(f'Loading {fsize:,} lines from "{rel_name}" ...')
@@ -58,7 +65,7 @@ def load_db_file(file_name: str, data: dict, keys: list):
         index += 1
         if not index % perc1:
             print('#', end='', flush=True)
-        key = gen_key(item, keys)
+        key = gen_key(item)
         # Empty keys don't make any sense, drop them
         if not key:
             empty_keys += 1
@@ -74,7 +81,7 @@ def load_db_file(file_name: str, data: dict, keys: list):
           f'added {len(data) - isize:,} new items in {t1-t0:.2f}s\n')
 
 
-def gen_key(item, keys: list) -> str:
+def default_gen_key(item, keys: list) -> str:
     if keys and isinstance(keys, (list, tuple)):
         return KEY_SEP.join(str(item.get(k, '')) for k in keys)
     else:
