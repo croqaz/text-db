@@ -50,32 +50,46 @@ def load_db_file(file_name: str, data: dict, keys: list, config: dict):
     rel_name = os.path.relpath(file_name, CWD)
     print(f'Loading {fsize:,} lines from "{rel_name}" ...')
 
-    index = 0
-    empty_keys = 0
+    stats = {
+        'time': 0,
+        'lines': 0,
+        'empty_keys': 0,
+        'empty_items': 0,
+    }
     local_db = {}
 
     for line in open(file_name):
         line = line.strip()
         if not line:
             continue
+        # Increment nr of non-empty lines
+        stats['lines'] += 1
+        # Show progress
+        if not stats['lines'] % perc1:
+            print('#', end='', flush=True)
         try:
             item = json.loads(line)
         except Exception as err:
-            print(f'ERR loading line "{line[:35]}" from "{rel_name}" : {err}')
-        index += 1
-        if not index % perc1:
-            print('#', end='', flush=True)
+            if len(line) > 45:
+                print(f'ERR loading line "{line[:20]}...{line[-20:]}" from "{rel_name}" : {err}')
+            else:
+                print(f'ERR loading line "{line}" from "{rel_name}" : {err}')
+        # Ignore null items, they don't make sense
+        if not item:
+            stats['empty_items'] += 1
+            continue
+        # Will process filters here
+        # Will process item here
         key = gen_key(item)
-        # Empty keys don't make any sense, drop them
+        # Ignore null keys, they don't make sense
         if not key:
-            empty_keys += 1
+            stats['empty_keys'] += 1
             continue
         local_db[key] = item
 
     data.update(local_db)
     t1 = time.monotonic()
+    stats['time'] = f'{t1-t0:.3f}s'
 
-    empty_keys_str = f' ignored {empty_keys} empty keys,' if empty_keys else ''
-
-    print(f'\nLoaded {len(local_db):,} items{empty_keys_str}, '
-          f'added {len(data) - isize:,} new items in {t1-t0:.2f}s\n')
+    print(f'\nStatistics: {stats}')
+    print(f'Loaded {len(local_db):,} items, added {len(data) - isize:,} new items.\n')

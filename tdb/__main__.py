@@ -12,16 +12,20 @@ def parse_args():
     cmdline.add_argument('-i', '--interact', help='interact with the DB', action='store_true')
     cmdline.add_argument('--verbose', help='show detailed logs', action='store_true')
     opts = cmdline.parse_args()
+    print('CMD opts:', opts, '\n')
 
     if opts.config:
-        opts.config = load_local_config(opts.config)
+        try:
+            opts.config = load_local_config(opts.config)
+            print(f'Loaded local config {opts.config}')
+        except Exception as err:
+            print(f'Cannot load "{opts.config}": {err}')
 
     return opts
 
 
 if __name__ == '__main__':
     opts = parse_args()
-    print('CMD opts:', opts, '\n')
     if not opts.keys and not opts.config:
         print('Warning: The KEYS are empty!')
     load_files(opts.files, opts.keys, opts.config, interact=opts.interact)
