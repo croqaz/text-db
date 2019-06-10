@@ -12,14 +12,14 @@ def parse_args():
     cmdline.add_argument('-i', '--interact', help='interact with the DB', action='store_true')
     cmdline.add_argument('--verbose', help='show detailed logs', action='store_true')
     opts = cmdline.parse_args()
-    print('CMD opts:', opts, '\n')
+    print('CMD opts:', opts)
 
     if opts.config:
         try:
             opts.config = load_local_config(opts.config)
-            print(f'Loaded local config {opts.config}')
+            print(f'Loaded local config {opts.config}\n')
         except Exception as err:
-            print(f'Cannot load "{opts.config}": {err}')
+            print(f'Cannot load "{opts.config}": {err}\n')
 
     return opts
 

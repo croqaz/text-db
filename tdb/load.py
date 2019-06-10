@@ -5,9 +5,10 @@ from glob import glob
 from pathlib import Path
 from subprocess import check_output
 
-import ipdb
+from IPython import embed
 
-CWD = os.getcwd()
+ROOT_FOLDER = str(Path.home())
+
 KEY_SEP = '-'
 
 
@@ -27,7 +28,8 @@ def load_files(files: str, keys: list, config: dict, interact=False):
             input_files.append(fname)
             load_db_file(fname, data, keys, config)
     if interact:
-        ipdb.set_trace()
+        # %colors linux
+        embed()
 
 
 def load_db_file(file_name: str, data: dict, keys: list, config: dict):
@@ -47,7 +49,7 @@ def load_db_file(file_name: str, data: dict, keys: list, config: dict):
     else:
         gen_key = lambda o: str(o)
 
-    rel_name = os.path.relpath(file_name, CWD)
+    rel_name = os.path.relpath(file_name, ROOT_FOLDER)
     print(f'Loading {fsize:,} lines from "{rel_name}" ...')
 
     stats = {
