@@ -2,14 +2,14 @@ import os
 import time
 import ujson as json
 from glob import glob
-from pathlib import Path
 from subprocess import check_output
+from pathlib import Path
 
 from IPython import embed
 
-ROOT_FOLDER = str(Path.home())
-
 KEY_SEP = '-'
+
+ROOT_FOLDER = str(Path.home())
 
 
 def load_files(files: str, keys: list, config: dict, interact=False):
@@ -22,17 +22,18 @@ def load_files(files: str, keys: list, config: dict, interact=False):
     """
     data = {}
     input_files = []
+    key_func = create_key_func(keys, config)
     for fpath in files:
         fpath = str(Path(fpath).expanduser().resolve())
         for fname in sorted(glob(fpath)):
             input_files.append(fname)
-            load_db_file(fname, data, keys, config)
+            load_json_file(fname, data, key_func)
     if interact:
         # %colors linux
         embed()
 
 
-def load_db_file(file_name: str, data: dict, keys: list, config: dict):
+def load_json_file(file_name: str, data: dict, key_func):
     """
     Loads a single JL file.
     """
@@ -41,13 +42,6 @@ def load_db_file(file_name: str, data: dict, keys: list, config: dict):
     fsize = int(wc)
     isize = len(data)
     perc1 = fsize // 100
-
-    if not keys and config.get('keys') and callable(config['keys']):
-        gen_key = config['keys']
-    elif keys and isinstance(keys, (list, tuple)):
-        gen_key = lambda o: KEY_SEP.join(str(o.get(k, '')) for k in keys)
-    else:
-        gen_key = lambda o: str(o)
 
     rel_name = os.path.relpath(file_name, ROOT_FOLDER)
     print(f'Loading {fsize:,} lines from "{rel_name}" ...')
@@ -82,7 +76,7 @@ def load_db_file(file_name: str, data: dict, keys: list, config: dict):
             continue
         # Will process filters here
         # Will process item here
-        key = gen_key(item)
+        key = key_func(item)
         # Ignore null keys, they don't make sense
         if not key:
             stats['empty_keys'] += 1
@@ -95,3 +89,18 @@ def load_db_file(file_name: str, data: dict, keys: list, config: dict):
 
     print(f'\nStatistics: {stats}')
     print(f'Loaded {len(local_db):,} items, added {len(data) - isize:,} new items.\n')
+
+
+def wc_lines(file_name: str) -> int:
+    wc_l = check_output(f'wc -l {file_name}', shell=True).strip().split()[0]
+    return int(wc_l)
+
+
+def create_key_func(keys: list, config: dict):
+    if not keys and config.get('keys') and callable(config['keys']):
+        gen_key = config['keys']
+    elif keys and isinstance(keys, (list, tuple)):
+        gen_key = lambda o: KEY_SEP.join(str(o.get(k, '')) for k in keys)
+    else:
+        gen_key = lambda o: str(o)
+    return gen_key
