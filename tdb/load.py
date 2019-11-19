@@ -1,9 +1,18 @@
 import os
 import time
-import ujson as json
 from glob import glob
 from subprocess import check_output
 from pathlib import Path
+
+from json import loads
+try:
+    from orjson import loads  # NOQA
+except Exception:
+    pass
+try:
+    from ujson import loads  # NOQA
+except Exception:
+    pass
 
 from IPython import embed
 
@@ -64,7 +73,7 @@ def load_json_file(file_name: str, data: dict, key_func):
         if not stats['lines'] % perc1:
             print('#', end='', flush=True)
         try:
-            item = json.loads(line)
+            item = loads(line)
         except Exception as err:
             if len(line) > 45:
                 print(f'ERR loading line "{line[:20]}...{line[-20:]}" from "{rel_name}" : {err}')
