@@ -1,5 +1,6 @@
 import os
 import time
+from typing import DefaultDict
 from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
@@ -17,8 +18,8 @@ def export_db(data_list: list, out_path: str):
 
     out_path = str(Path(out_path).expanduser().resolve())
     now = datetime.now()
-    open_fds = {}
-    file_index = defaultdict(int)
+    open_fds: dict = {}
+    file_index: DefaultDict = defaultdict(int)
 
     for o in data_list:
         # Expand the format string using NOW and the object data
@@ -39,8 +40,8 @@ def export_db(data_list: list, out_path: str):
         fd.close()
 
     t1 = time.monotonic()
-    file_index = {os.path.relpath(k, ROOT_FOLDER): v for k, v in file_index.items()}
+    stats = {os.path.relpath(k, ROOT_FOLDER): v for k, v in file_index.items()}
 
-    print(f'\nStatistics: {file_index}')
+    print(f'\nStatistics: {stats}')
     print(f'Exported all items in {t1-t0:.2f}s!')
     # The end

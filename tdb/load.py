@@ -1,16 +1,17 @@
 import os
 import time
 from glob import glob
-from subprocess import check_output
+from typing import Callable
 from pathlib import Path
+from subprocess import check_output
 
 from json import loads
 try:
-    from orjson import loads  # NOQA
+    from orjson import loads  # type: ignore
 except Exception:
     pass
 try:
-    from ujson import loads  # NOQA
+    from ujson import loads  # type: ignore
 except Exception:
     pass
 
@@ -29,8 +30,8 @@ def load_files(files: str, keys: list, config: dict, interact=False):
     * the validation for one or more fields
     * the filters for one or more fields
     """
-    data = {}
-    input_files = []
+    data: dict = {}
+    input_files: list = []
     key_func = create_key_func(keys, config)
     for fpath in files:
         fpath = str(Path(fpath).expanduser().resolve())
@@ -42,7 +43,7 @@ def load_files(files: str, keys: list, config: dict, interact=False):
         embed()
 
 
-def load_json_file(file_name: str, data: dict, key_func):
+def load_json_file(file_name: str, data: dict, key_func: Callable, verbose=True):
     """
     Loads a single JL file.
     """
@@ -53,15 +54,16 @@ def load_json_file(file_name: str, data: dict, key_func):
     perc1 = fsize // 100
 
     rel_name = os.path.relpath(file_name, ROOT_FOLDER)
-    print(f'Loading {fsize:,} lines from "{rel_name}" ...')
+    if verbose:
+        print(f'Loading {fsize:,} lines from "{rel_name}" ...')
 
     stats = {
-        'time': 0,
+        'time': .0,
         'lines': 0,
         'empty_keys': 0,
         'empty_items': 0,
     }
-    local_db = {}
+    local_db: dict = {}
 
     for line in open(file_name):
         line = line.strip()
@@ -94,10 +96,12 @@ def load_json_file(file_name: str, data: dict, key_func):
 
     data.update(local_db)
     t1 = time.monotonic()
-    stats['time'] = f'{t1-t0:.3f}s'
+    print('\n')
 
-    print(f'\nStatistics: {stats}')
-    print(f'Loaded {len(local_db):,} items, added {len(data) - isize:,} new items.\n')
+    if verbose:
+        stats['time'] = float(f'{t1-t0:.3f}')
+        print(f'Statistics: {stats}')
+        print(f'Loaded {len(local_db):,} items, added {len(data) - isize:,} new items.\n')
 
 
 def wc_lines(file_name: str) -> int:
