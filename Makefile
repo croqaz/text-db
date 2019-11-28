@@ -4,12 +4,9 @@ ENV=
 clean:
 	rm -rf `find . -name __pycache__`
 	rm -f `find . -type f -name '*.py[co]' `
-	rm -f `find . -type f -name '*~' `
-	rm -f `find . -type f -name '.*~' `
-	rm -f `find . -type f -name '@*' `
-	rm -f `find . -type f -name '#*#' `
 	rm -f `find . -type f -name '*.orig' `
 	rm -f `find . -type f -name '*.rej' `
+	rm -rf *.egg-info
 	rm -f .coverage
 	rm -rf coverage
 	rm -rf build
@@ -24,7 +21,7 @@ lint:
 	${ENV}mypy --ignore-missing-imports tdb
 
 coverage:
-	${ENV}pytest --cov-report term --cov=tdb tests/
+	${ENV}pytest --cov-report term --cov=tdb/ tests/
 
 test:
-	${ENV}pytest -ra --capture=no --verbose tests/
+	${ENV}pytest -ra -sv tests/
