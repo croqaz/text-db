@@ -30,20 +30,30 @@ def load_files(files: str, keys: list, config: dict, interact=False):
     * the validation for one or more fields
     * the filters for one or more fields
     """
+    # Exposed for interact:
     data: dict = {}
     input_files: list = []
+
+    # Not available in interact:
     key_func = create_key_func(keys, config)
+    validate_func = create_validate_func(config)
+
     for fpath in files:
         fpath = str(Path(fpath).expanduser().resolve())
         for fname in sorted(glob(fpath)):
             input_files.append(fname)
-            load_json_file(fname, data, key_func)
+            load_json_file(fname, data, key_func, validate_func)
+
+    del key_func
+    del validate_func
+
     if interact:
         # %colors linux
         embed()
 
 
-def load_json_file(file_name: str, data: dict, key_func: Callable, verbose=True):
+def load_json_file(file_name: str, data: dict,
+                   key_func: Callable, validate_func: Callable, verbose=True):
     """
     Loads a single JL file.
     """
@@ -85,8 +95,10 @@ def load_json_file(file_name: str, data: dict, key_func: Callable, verbose=True)
         if not item:
             stats['empty_items'] += 1
             continue
-        # Will process filters here
-        # Will process item here
+        # Validate here
+        if not validate_func(item):
+            continue
+        # TODO: Will process item here
         key = key_func(item)
         # Ignore null keys, they don't make sense
         if not key:
@@ -117,3 +129,14 @@ def create_key_func(keys: list, config: dict):
     else:
         gen_key = lambda o: str(o)
     return gen_key
+
+
+def create_validate_func(config: dict):
+    if callable(config.get('validate')):
+        validate = config['validate']
+    # elif config.get('validate') and isinstance(config['validate'], (list, tuple)):
+    #     # Does this even make sense?
+    #     validate = lambda o: ???
+    else:
+        validate = lambda o: True
+    return validate
