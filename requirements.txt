@@ -5,6 +5,7 @@ pytest-cov
 # Dev coverage
 codecov
 
+prop>=0.0.2
 orjson~=2.1
 ujson~=1.35
 ipython~=7.9.0
