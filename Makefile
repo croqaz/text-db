@@ -1,3 +1,4 @@
+.PHONY: test clean update lint coverage
 
 ENV=
 
@@ -21,7 +22,7 @@ lint:
 	${ENV}mypy --ignore-missing-imports tdb
 
 coverage:
-	${ENV}pytest --cov-report term --cov=tdb/ tests/
+	${ENV}pytest --cov-report term --cov=tdb/ test/
 
 test:
-	${ENV}pytest -ra -sv tests/
+	${ENV}pytest -ra -sv test/

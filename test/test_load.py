@@ -12,7 +12,7 @@ def validate_func(obj):
 def test_load_json_file():
     data = {}
     load.load_json_file(
-        'tests/fixtures/fake_profiles.jl',
+        'test/fixtures/fake_profiles.jl',
         data,
         key_func=key_func,
         validate_func=validate_func,
