@@ -1,9 +1,9 @@
 import os
 import time
 from glob import glob
-from typing import Callable
 from pathlib import Path
 from subprocess import check_output
+from typing import Callable, Optional
 
 from json import loads
 try:
@@ -16,6 +16,7 @@ except Exception:
     pass
 
 from IPython import embed
+from prop import get as dot_get  # noqa: F401
 
 KEY_SEP = '-'
 
@@ -37,23 +38,30 @@ def load_files(files: str, keys: list, config: dict, interact=False):
     # Not available in interact:
     key_func = create_key_func(keys, config)
     validate_func = create_validate_func(config)
+    transform_func = None
 
     for fpath in files:
         fpath = str(Path(fpath).expanduser().resolve())
         for fname in sorted(glob(fpath)):
             input_files.append(fname)
-            load_json_file(fname, data, key_func, validate_func)
+            load_json_file(fname, data, key_func, validate_func, transform_func)
 
+    del files
     del key_func
     del validate_func
+    del transform_func
 
     if interact:
         # %colors linux
         embed()
 
 
-def load_json_file(file_name: str, data: dict,
-                   key_func: Callable, validate_func: Callable, verbose=True):
+def load_json_file(file_name: str,
+                   data: dict,
+                   key_func: Callable,
+                   validate_func: Optional[Callable] = None,
+                   transform_func: Optional[Callable] = None,
+                   verbose=True):
     """
     Loads a single JL file.
     """
@@ -91,15 +99,20 @@ def load_json_file(file_name: str, data: dict,
                 print(f'ERR loading line "{line[:20]}...{line[-20:]}" from "{rel_name}" : {err}')
             else:
                 print(f'ERR loading line "{line}" from "{rel_name}" : {err}')
+
         # Ignore null items, they don't make sense
         if not item:
             stats['empty_items'] += 1
             continue
-        # Validate here
-        if not validate_func(item):
+        # Validate item
+        if validate_func and not validate_func(item):
             continue
-        # TODO: Will process item here
+        # Process item
+        if transform_func:
+            item = transform_func(item)
+        # Calculate unique key
         key = key_func(item)
+
         # Ignore null keys, they don't make sense
         if not key:
             stats['empty_keys'] += 1
@@ -132,11 +145,17 @@ def create_key_func(keys: list, config: dict):
 
 
 def create_validate_func(config: dict):
+    validate = None
     if callable(config.get('validate')):
         validate = config['validate']
     # elif config.get('validate') and isinstance(config['validate'], (list, tuple)):
     #     # Does this even make sense?
     #     validate = lambda o: ???
-    else:
-        validate = lambda o: True
     return validate
+
+
+def create_transform_func(config: dict):
+    transform = None
+    if callable(config.get('transform')):
+        transform = config['transform']
+    return transform
