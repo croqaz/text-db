@@ -22,7 +22,7 @@ lint:
 	${ENV}mypy --ignore-missing-imports tdb
 
 coverage:
-	${ENV}pytest --cov-report term --cov=tdb/ test/
+	${ENV}pytest --cov-report term --cov-report xml --cov=tdb/ test/
 
 test:
 	${ENV}pytest -ra -sv test/
