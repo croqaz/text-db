@@ -1,5 +1,6 @@
 # Dev lint code
-flake8
+flake8~=3.7
+mypy~=0.750
 # Dev test code
 pytest-cov
 # Dev coverage
