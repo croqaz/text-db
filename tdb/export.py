@@ -1,15 +1,15 @@
 import os
 import time
-from typing import DefaultDict
 from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
+from typing import DefaultDict, ValuesView, Union
 import ujson as json
 
 ROOT_FOLDER = str(Path.home())
 
 
-def export_db(data_list: list, out_path: str):
+def export_db(data_list: Union[list, ValuesView], out_path: str):
     # https://programiz.com/python-programming/methods/string/format
     # out_path = '~/DATA/Project/{created_at:.7}/proj-data.jl'
 

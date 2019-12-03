@@ -18,6 +18,8 @@ except Exception:
 from IPython import embed
 from prop import get as dot_get  # noqa: F401
 
+from .export import export_db
+
 KEY_SEP = '-'
 
 ROOT_FOLDER = str(Path.home())
@@ -26,14 +28,18 @@ ROOT_FOLDER = str(Path.home())
 def load_files(files: str, keys: list, config: dict, interact=False):
     """
     High level discover and load JL files.
-    The params are:
+    The functions in config are:
     * the key used for de-duplication
     * the validation for one or more fields
-    * the filters for one or more fields
+    * the transform function
     """
     # Exposed for interact:
     data: dict = {}
     input_files: list = []
+
+    def export(out_path: str):
+        """ Shortcut function """
+        return export_db(data.values(), out_path)
 
     # Not available in interact:
     key_func = create_key_func(keys, config)
