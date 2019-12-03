@@ -18,14 +18,14 @@ except Exception:
 from IPython import embed
 from prop import get as dot_get  # noqa: F401
 
-from export import export_db
+from .export import export_db
 
 KEY_SEP = '-'
 
 ROOT_FOLDER = str(Path.home())
 
 
-def load_files(files: str, keys: list, config: dict, interact=False):
+def load_files(files: str, limit: int, keys: list, config: dict, interact=False):
     """
     High level discover and load JL files.
     The functions in config are:
@@ -50,7 +50,7 @@ def load_files(files: str, keys: list, config: dict, interact=False):
         fpath = str(Path(fpath).expanduser().resolve())
         for fname in sorted(glob(fpath)):
             input_files.append(fname)
-            load_json_file(fname, data, key_func, validate_func, transform_func)
+            load_json_file(fname, data, key_func, validate_func, transform_func, limit)
 
     del files
     del key_func
@@ -62,18 +62,19 @@ def load_files(files: str, keys: list, config: dict, interact=False):
         embed()
 
 
-def load_json_file(file_name: str,
-                   data: dict,
-                   key_func: Callable,
-                   validate_func: Optional[Callable] = None,
-                   transform_func: Optional[Callable] = None,
-                   verbose=True):
+def load_json_file(  # noqa: C901
+    file_name: str,
+    data: dict,
+    key_func: Callable,
+    validate_func: Optional[Callable] = None,
+    transform_func: Optional[Callable] = None,
+    limit: int = 0,
+    verbose=True):
     """
     Loads a single JL file.
     """
     t0 = time.monotonic()
-    wc, _ = check_output(f'wc -l {file_name}', shell=True).strip().split()
-    fsize = int(wc)
+    fsize = wc_lines(file_name)
     isize = len(data)
     perc1 = fsize // 100
 
@@ -98,7 +99,7 @@ def load_json_file(file_name: str,
         # Increment nr of non-empty lines
         stats['lines'] += 1
         # Show progress
-        if not stats['lines'] % perc1:
+        if verbose and not stats['lines'] % perc1:
             print('#', end='', flush=True)
         try:
             item = loads(line)
@@ -131,15 +132,17 @@ def load_json_file(file_name: str,
         if not key:
             stats['empty_keys'] += 1
             continue
+
         local_db[key] = item
+        if limit and len(local_db) >= limit:
+            break
 
     data.update(local_db)
     t1 = time.monotonic()
-    print('\n')
 
     if verbose:
         stats['time'] = float(f'{t1-t0:.3f}')
-        print(f'Statistics: {stats}')
+        print(f'\nStatistics: {stats}')
         print(f'Loaded {len(local_db):,} items, added {len(data) - isize:,} new items.\n')
 
 
