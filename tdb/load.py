@@ -18,7 +18,7 @@ except Exception:
 from IPython import embed
 from prop import get as dot_get  # noqa: F401
 
-from .export import export_db
+from export import export_db
 
 KEY_SEP = '-'
 
@@ -86,6 +86,8 @@ def load_json_file(file_name: str,
         'lines': 0,
         'empty_keys': 0,
         'empty_items': 0,
+        'invalid_items': 0,
+        'validation_err': 0,
     }
     local_db: dict = {}
 
@@ -111,7 +113,13 @@ def load_json_file(file_name: str,
             stats['empty_items'] += 1
             continue
         # Validate item
-        if validate_func and not validate_func(item):
+        try:
+            if validate_func and not validate_func(item):
+                stats['invalid_items'] += 1
+                continue
+        except Exception as err:
+            print(f'Cannot validate item "{item}" from "{rel_name}" : {err}')
+            stats['validation_err'] += 1
             continue
         # Process item
         if transform_func:
