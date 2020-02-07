@@ -25,7 +25,7 @@ KEY_SEP = '-'
 ROOT_FOLDER = str(Path.home())
 
 
-def load_files(files: str, limit: int, keys: list, config: dict, interact=False):
+def load_files(files: str, limit: int, keys: list, config: dict, verbose=True, interact=False):
     """
     High level discover and load JL files.
     The functions in config are:
@@ -46,11 +46,19 @@ def load_files(files: str, limit: int, keys: list, config: dict, interact=False)
     validate_func = create_validate_func(config)
     transform_func = None
 
+    if verbose:
+        t0 = time.monotonic()
+
     for fpath in files:
         fpath = str(Path(fpath).expanduser().resolve())
         for fname in sorted(glob(fpath)):
             input_files.append(fname)
-            load_json_file(fname, data, key_func, validate_func, transform_func, limit)
+            load_json_file(fname, data, key_func, validate_func, transform_func, limit, verbose)
+
+    if verbose:
+        t1 = time.monotonic()
+        print(f'Loaded {len(data):,} items in {t1-t0:.3f} sec.\n')
+        del t0, t1
 
     del files
     del key_func
@@ -87,6 +95,7 @@ def load_json_file(  # noqa: C901
         'lines': 0,
         'empty_keys': 0,
         'empty_items': 0,
+        'duplicate_keys': 0,
         'invalid_items': 0,
         'validation_err': 0,
     }
@@ -142,6 +151,7 @@ def load_json_file(  # noqa: C901
 
     if verbose:
         stats['time'] = float(f'{t1-t0:.3f}')
+        stats['duplicate_keys'] = stats['lines'] - len(local_db)
         print(f'\nStatistics: {stats}')
         print(f'Loaded {len(local_db):,} items, added {len(data) - isize:,} new items.\n')
 

@@ -32,4 +32,5 @@ if __name__ == '__main__':
     opts = parse_args()
     if not opts.keys and not opts.config:
         print('Warning: The KEYS are empty!')
-    load_files(opts.files, opts.limit, opts.keys, opts.config, interact=opts.interact)
+    load_files(opts.files, opts.limit, opts.keys, opts.config,
+               verbose=opts.verbose, interact=opts.interact)
