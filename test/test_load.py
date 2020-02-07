@@ -21,7 +21,7 @@ def validate_func_false(obj):
 
 def test_load_json_file():
     data = {}
-    load.load_json_file(JL_FILE_1, data, key_func=key_func, verbose=False)
+    load.load_json_file(JL_FILE_1, data, key_func=key_func)
     assert len(data) == 100
 
     first_value = next(iter(data.values()))
@@ -32,7 +32,7 @@ def test_load_json_file():
 
 def test_load_json_key_zero():
     data = {}
-    load.load_json_file(JL_FILE_1, data, key_func=key_func_0, verbose=False)
+    load.load_json_file(JL_FILE_1, data, key_func=key_func_0)
     assert len(data) == 1
     assert next(iter(data)) == 'x'
 
@@ -44,7 +44,6 @@ def test_load_json_validate_true():
         data,
         key_func=key_func,
         validate_func=validate_func_true,
-        verbose=False,
     )
     assert len(data) == 100
 
@@ -56,6 +55,5 @@ def test_load_json_validate_false():
         data,
         key_func=key_func,
         validate_func=validate_func_false,
-        verbose=False,
     )
     assert len(data) == 0

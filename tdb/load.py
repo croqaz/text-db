@@ -25,7 +25,7 @@ KEY_SEP = '-'
 ROOT_FOLDER = str(Path.home())
 
 
-def load_files(files: str, limit: int, keys: list, config: dict, verbose=True, interact=False):
+def load_files(files: str, limit: int, keys: list, config: dict, verbose=False, interact=False):
     """
     High level discover and load JL files.
     The functions in config are:
@@ -77,7 +77,7 @@ def load_json_file(  # noqa: C901
     validate_func: Optional[Callable] = None,
     transform_func: Optional[Callable] = None,
     limit: int = 0,
-    verbose=True):
+    verbose=False):
     """
     Loads a single JL file.
     """
