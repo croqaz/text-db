@@ -9,7 +9,7 @@ import ujson as json
 ROOT_FOLDER = str(Path.home())
 
 
-def export_db(data_list: Union[list, ValuesView], out_path: str):
+def export_db(data_list: Union[list, ValuesView], out_path: str, acc_mode='w'):
     # https://programiz.com/python-programming/methods/string/format
     # out_path = '~/DATA/Project/{created_at:.7}/proj-data.jl'
 
@@ -29,7 +29,7 @@ def export_db(data_list: Union[list, ValuesView], out_path: str):
             os.makedirs(out_fold, exist_ok=True)
             rel_name = os.path.relpath(out_file, ROOT_FOLDER)
             print(f'Opening file "{rel_name}" for writing ...')
-            open_fds[out_file] = open(out_file, 'w')
+            open_fds[out_file] = open(out_file, acc_mode)
 
         file_index[out_file] += 1
         fd = open_fds[out_file]
