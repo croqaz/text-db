@@ -69,10 +69,12 @@ def load_files(files: str, limit: int, keys: list, config: dict, verbose=False, 
         # %colors linux
         embed()
 
+    return data
+
 
 def load_json_file(  # noqa: C901
     file_name: str,
-    data: dict,
+    db_data: dict,
     key_func: Callable,
     validate_func: Optional[Callable] = None,
     transform_func: Optional[Callable] = None,
@@ -83,7 +85,7 @@ def load_json_file(  # noqa: C901
     """
     t0 = time.monotonic()
     fsize = wc_lines(file_name)
-    isize = len(data)
+    isize = len(db_data)
     perc1 = fsize // 100
 
     rel_name = os.path.relpath(file_name, ROOT_FOLDER)
@@ -127,8 +129,7 @@ def load_json_file(  # noqa: C901
             if validate_func and not validate_func(item):
                 stats['invalid_items'] += 1
                 continue
-        except Exception as err:
-            print(f'Cannot validate item "{item}" from "{rel_name}" : {err}')
+        except Exception:
             stats['validation_err'] += 1
             continue
         # Process item
@@ -142,18 +143,22 @@ def load_json_file(  # noqa: C901
             stats['empty_keys'] += 1
             continue
 
+        if key in local_db:
+            stats['duplicate_keys'] += 1
+
+        # OVERWRITE key, if exists
         local_db[key] = item
+
         if limit and len(local_db) >= limit:
             break
 
-    data.update(local_db)
+    db_data.update(local_db)
     t1 = time.monotonic()
 
     if verbose:
         stats['time'] = float(f'{t1-t0:.3f}')
-        stats['duplicate_keys'] = stats['lines'] - len(local_db)
         print(f'\nStatistics: {stats}')
-        print(f'Loaded {len(local_db):,} items, added {len(data) - isize:,} new items.\n')
+        print(f'Loaded {len(local_db):,} items, added {len(db_data) - isize:,} new items.\n')
 
 
 def wc_lines(file_name: str) -> int:
