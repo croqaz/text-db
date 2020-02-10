@@ -25,7 +25,13 @@ KEY_SEP = '-'
 ROOT_FOLDER = str(Path.home())
 
 
-def load_files(files: str, limit: int, keys: list, config: dict, verbose=False, interact=False):
+def load_files(  # noqa: C901
+    files: str,
+    limit: int = 0,
+    keys: list = [],
+    config: dict = {},
+    verbose=False,
+    interact=False):
     """
     High level discover and load JL files.
     The functions in config are:
