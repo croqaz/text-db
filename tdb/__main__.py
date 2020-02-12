@@ -11,6 +11,7 @@ def parse_args():
     cmdline.add_argument('-k', '--keys', action='append', default=[])
     cmdline.add_argument('-c', '--config', default={}, help='Python config file with keys, filters')
     cmdline.add_argument('-i', '--interact', help='interact with the DB', action='store_true')
+    cmdline.add_argument('--noconfig', action='store_true', help='Force ignoring all configs')
     cmdline.add_argument('--verbose', help='show detailed logs', action='store_true')
     opts = cmdline.parse_args()
     print('CMD opts:', opts)
@@ -30,7 +31,11 @@ def parse_args():
 
 if __name__ == '__main__':
     opts = parse_args()
-    if not opts.keys and not opts.config:
+    if not opts.noconfig and not opts.keys and not opts.config:
         print('Warning: The KEYS are empty!')
-    load_files(opts.files, opts.limit, opts.keys, opts.config,
-               verbose=opts.verbose, interact=opts.interact)
+    if opts.noconfig:
+        load_files(opts.files, opts.limit,
+                   verbose=opts.verbose, interact=opts.interact)
+    else:
+        load_files(opts.files, opts.limit, opts.keys, opts.config,
+                   verbose=opts.verbose, interact=opts.interact)
