@@ -105,6 +105,7 @@ def load_json_file(  # noqa: C901
         'empty_items': 0,
         'duplicate_keys': 0,
         'invalid_items': 0,
+        'key_func_err': 0,
         'validation_err': 0,
     }
     local_db: dict = {}
@@ -141,8 +142,13 @@ def load_json_file(  # noqa: C901
         # Process item
         if transform_func:
             item = transform_func(item)
+
         # Calculate unique key
-        key = key_func(item)
+        try:
+            key = key_func(item)
+        except Exception:
+            stats['key_func_err'] += 1
+            continue
 
         # Ignore null keys, they don't make sense
         if not key:
