@@ -14,7 +14,7 @@ def export_db(data_list: Union[list, ValuesView], out_path: str, acc_mode='w'):
     # out_path = '~/DATA/Project/{created_at:.7}/proj-data.jl'
 
     t0 = time.monotonic()
-    print('Saving data list ...')
+    print(f'Exporting data list to {out_path} ...')
 
     out_path = str(Path(out_path).expanduser().resolve())
     now = datetime.now()

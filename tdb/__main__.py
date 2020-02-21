@@ -1,6 +1,8 @@
 from argparse import ArgumentParser
+from pathlib import Path
 
 from .load import load_files
+from .export import export_db
 from .config import load_local_config
 
 
@@ -10,6 +12,7 @@ def parse_args():
     cmdline.add_argument('-n', '--limit', type=int, help='stop after number of items')
     cmdline.add_argument('-k', '--keys', action='append', default=[])
     cmdline.add_argument('-c', '--config', default={}, help='Python config file with keys, filters')
+    cmdline.add_argument('-e', '--export', type=Path, help='interact with the DB')
     cmdline.add_argument('-i', '--interact', help='interact with the DB', action='store_true')
     cmdline.add_argument('--noconfig', action='store_true', help='Force ignoring all configs')
     cmdline.add_argument('--verbose', help='show detailed logs', action='store_true')
@@ -33,7 +36,12 @@ if __name__ == '__main__':
     opts = parse_args()
     if not opts.noconfig and not opts.keys and not opts.config:
         print('Warning: The KEYS are empty!')
-    if opts.noconfig:
+
+    if opts.export:
+        db = load_files(opts.files, opts.limit, opts.keys, opts.config,
+                        verbose=opts.verbose)
+        export_db(db.values(), opts.export)
+    elif opts.noconfig:
         load_files(opts.files, opts.limit,
                    verbose=opts.verbose, interact=opts.interact)
     else:
