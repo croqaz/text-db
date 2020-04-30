@@ -136,4 +136,4 @@ Temporary Items
 .apdisk
 
 # Local TDB cfg
-tdb_config.py
+tdb_*config.py

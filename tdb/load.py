@@ -117,7 +117,7 @@ def load_json_file(  # noqa: C901
         # Increment nr of non-empty lines
         stats['lines'] += 1
         # Show progress
-        if verbose and not stats['lines'] % perc1:
+        if verbose and perc1 and not stats['lines'] % perc1:
             print('#', end='', flush=True)
         try:
             item = loads(line)
