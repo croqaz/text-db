@@ -3,16 +3,16 @@ import time
 from glob import glob
 from pathlib import Path
 from subprocess import check_output
-from typing import Callable, Optional
+from typing import Callable, Optional, Dict, Any
 
 from json import loads
 try:
     from orjson import loads  # type: ignore
-except Exception:
+except ImportError:
     pass
 try:
     from ujson import loads  # type: ignore
-except Exception:
+except ImportError:
     pass
 
 from IPython import embed
@@ -26,12 +26,12 @@ ROOT_FOLDER = str(Path.home())
 
 
 def load_files(  # noqa: C901
-    files: str,
-    limit: int = 0,
-    keys: list = [],
-    config: dict = {},
-    verbose=False,
-    interact=False):
+        files: str,
+        limit: int = 0,
+        keys: list = [],
+        config: dict = {},
+        verbose=False,
+        interact=False) -> Dict[Any, Any]:
     """
     High level discover and load JL files.
     The functions in config are:
@@ -79,15 +79,15 @@ def load_files(  # noqa: C901
 
 
 def load_json_file(  # noqa: C901
-    file_name: str,
-    db_data: dict,
-    key_func: Callable,
-    validate_func: Optional[Callable] = None,
-    transform_func: Optional[Callable] = None,
-    limit: int = 0,
-    verbose=False):
+        file_name: str,
+        db_data: dict,
+        key_func: Callable,
+        validate_func: Optional[Callable] = None,
+        transform_func: Optional[Callable] = None,
+        limit: int = 0,
+        verbose=False):
     """
-    Loads a single JL file.
+    Loads a single JL file and inject the result into DB DATA.
     """
     t0 = time.monotonic()
     fsize = wc_lines(file_name)

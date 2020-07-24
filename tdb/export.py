@@ -3,13 +3,15 @@ import time
 from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
-from typing import DefaultDict, ValuesView, Union
+from typing import List, DefaultDict, ValuesView, Union
 import ujson as json
 
 ROOT_FOLDER = str(Path.home())
 
 
-def export_db(data_list: Union[list, ValuesView], out_path: str, acc_mode='w'):
+def export_db(data_list: Union[list, ValuesView],
+              out_path: str,
+              acc_mode='w') -> List[str]:
     # https://programiz.com/python-programming/methods/string/format
     # out_path = '~/DATA/Project/{created_at:.7}/proj-data.jl'
 
@@ -22,7 +24,7 @@ def export_db(data_list: Union[list, ValuesView], out_path: str, acc_mode='w'):
     file_index: DefaultDict = defaultdict(int)
 
     for o in data_list:
-        # Expand the format string using NOW and the object data
+        # Expand the format string using current DT and the object data
         out_file = out_path.format(now=now, **o)
         if out_file not in open_fds:
             out_fold, _ = os.path.split(out_file)
@@ -44,4 +46,5 @@ def export_db(data_list: Union[list, ValuesView], out_path: str, acc_mode='w'):
 
     print(f'\nStatistics: {stats}')
     print(f'Exported all items in {t1-t0:.2f}s!')
-    # The end
+
+    return list(open_fds)
