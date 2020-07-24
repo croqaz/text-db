@@ -135,5 +135,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# Data folders
+data/
 # Local TDB cfg
 tdb_*config.py
