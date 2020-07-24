@@ -7,7 +7,7 @@ pytest-cov
 codecov
 
 prop>=0.0.2
-orjson~=2.2
-ujson~=1.35
-ipython>=7.10
+orjson~=2.6.0
+ujson~=3.0.0
+ipython>=7
 # aiohttp~=3.6.0
