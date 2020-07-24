@@ -50,7 +50,7 @@ def load_files(  # noqa: C901
     # Not available in interact:
     key_func = create_key_func(keys, config)
     validate_func = create_validate_func(config)
-    transform_func = None
+    transform_func = create_transform_func(config)
 
     if verbose:
         t0 = time.monotonic()
@@ -139,6 +139,7 @@ def load_json_file(  # noqa: C901
         except Exception:
             stats['validation_err'] += 1
             continue
+
         # Process item
         if transform_func:
             item = transform_func(item)
