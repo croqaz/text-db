@@ -27,9 +27,10 @@ ROOT_FOLDER = str(Path.home())
 
 def load_files(  # noqa: C901
         files: str,
-        limit: int = 0,
         keys: list = [],
         config: dict = {},
+        limit: int = 0,
+        limit_lines: int = 0,
         verbose=False,
         interact=False) -> Dict[Any, Any]:
     """
@@ -65,6 +66,7 @@ def load_files(  # noqa: C901
                            validate_func,
                            transform_func,
                            limit=limit,
+                           limit_lines=limit_lines,
                            verbose=verbose)
 
     if verbose:
@@ -92,6 +94,7 @@ def load_json_file(  # noqa: C901
         transform_func: Optional[Callable] = None,
         merge_func: Optional[Callable] = None,
         limit: int = 0,
+        limit_lines: int = 0,
         verbose=False):
     """
     Loads a single JL file and inject the result into DB DATA.
@@ -107,9 +110,9 @@ def load_json_file(  # noqa: C901
         merge_func = lambda old_item, new_item: new_item
 
     t0 = time.monotonic()
-    fsize = wc_lines(file_name)
+    fsize = limit_lines if limit_lines else wc_lines(file_name)
     isize = len(db_data)
-    perc1 = fsize // 100
+    perc1 = fsize / 100.0
 
     rel_name = os.path.relpath(file_name, ROOT_FOLDER)
     if verbose:
@@ -132,8 +135,12 @@ def load_json_file(  # noqa: C901
         line = line.strip()
         if not line:
             continue
+
+        if limit_lines and stats['lines'] >= limit_lines:
+            break
         # Increment nr of non-empty lines
         stats['lines'] += 1
+
         # Show progress
         if verbose and perc1 and not stats['lines'] % perc1:
             print('#', end='', flush=True)

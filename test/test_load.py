@@ -32,6 +32,12 @@ def test_load_files_limit():
     data = load.load_files([JL_FILE_1], limit=5)
     assert len(data) == 5
 
+    data = load.load_files([JL_FILE_1], limit_lines=5)
+    assert len(data) == 5
+
+    data = load.load_files([JL_FILE_1], limit_lines=5, limit=10)
+    assert len(data) == 5
+
 
 def test_load_json_file():
     data = {}
