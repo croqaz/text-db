@@ -59,7 +59,13 @@ def load_files(  # noqa: C901
         fpath = str(Path(fpath).expanduser().resolve())
         for fname in sorted(glob(fpath)):
             input_files.append(fname)
-            load_json_file(fname, data, key_func, validate_func, transform_func, limit, verbose)
+            load_json_file(fname,
+                           data,
+                           key_func,
+                           validate_func,
+                           transform_func,
+                           limit=limit,
+                           verbose=verbose)
 
     if verbose:
         t1 = time.monotonic()
@@ -84,6 +90,7 @@ def load_json_file(  # noqa: C901
         key_func: Optional[Callable] = None,
         validate_func: Optional[Callable] = None,
         transform_func: Optional[Callable] = None,
+        merge_func: Optional[Callable] = None,
         limit: int = 0,
         verbose=False):
     """
@@ -94,6 +101,10 @@ def load_json_file(  # noqa: C901
 
     if key_func is None:
         key_func = repr
+
+    if merge_func is None:
+        # The default merging strategy totally ignores the old item
+        merge_func = lambda old_item, new_item: new_item
 
     t0 = time.monotonic()
     fsize = wc_lines(file_name)
@@ -112,6 +123,7 @@ def load_json_file(  # noqa: C901
         'duplicate_keys': 0,
         'invalid_items': 0,
         'key_func_err': 0,
+        'merging_err': 0,
         'validation_err': 0,
     }
     local_db: dict = {}
@@ -165,7 +177,12 @@ def load_json_file(  # noqa: C901
 
         if key in local_db:
             stats['duplicate_keys'] += 1
-            local_db[key] = merging_strategy(local_db[key], item)
+
+            try:
+                local_db[key] = merge_func(local_db[key], item)
+            except Exception:
+                stats['merging_err'] += 1
+                continue
         else:
             local_db[key] = item
 
@@ -213,9 +230,3 @@ def create_transform_func(config: dict):
     if callable(config.get('transform')):
         transform = config['transform']
     return transform
-
-
-def merging_strategy(old_item, new_item):
-    # By default, totally ignore the old item,
-    # in other words overwrite the old key
-    return new_item
