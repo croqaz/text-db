@@ -39,6 +39,7 @@ def test_load_json_key_zero():
     data = {}
     load.load_json_file(JL_FILE_1, data, key_func=key_func_0)
     assert len(data) == 1
+    assert len(data['x']) > 1
     assert next(iter(data)) == 'x'
 
 

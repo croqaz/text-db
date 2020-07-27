@@ -158,9 +158,9 @@ def load_json_file(  # noqa: C901
 
         if key in local_db:
             stats['duplicate_keys'] += 1
-
-        # OVERWRITE key, if exists
-        local_db[key] = item
+            local_db[key] = merging_strategy(local_db[key], item)
+        else:
+            local_db[key] = item
 
         if limit and len(local_db) >= limit:
             break
@@ -204,3 +204,9 @@ def create_transform_func(config: dict):
     if callable(config.get('transform')):
         transform = config['transform']
     return transform
+
+
+def merging_strategy(old_item, new_item):
+    # By default, totally ignore the old item,
+    # in other words overwrite the old key
+    return new_item
