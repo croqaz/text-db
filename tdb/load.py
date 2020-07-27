@@ -80,8 +80,8 @@ def load_files(  # noqa: C901
 
 def load_json_file(  # noqa: C901
         file_name: str,
-        db_data: dict,
-        key_func: Callable,
+        db_data: Optional[dict] = None,
+        key_func: Optional[Callable] = None,
         validate_func: Optional[Callable] = None,
         transform_func: Optional[Callable] = None,
         limit: int = 0,
@@ -89,6 +89,12 @@ def load_json_file(  # noqa: C901
     """
     Loads a single JL file and inject the result into DB DATA.
     """
+    if db_data is None:
+        db_data = {}
+
+    if key_func is None:
+        key_func = repr
+
     t0 = time.monotonic()
     fsize = wc_lines(file_name)
     isize = len(db_data)
@@ -131,6 +137,7 @@ def load_json_file(  # noqa: C901
         if not item:
             stats['empty_items'] += 1
             continue
+
         # Validate item
         try:
             if validate_func and not validate_func(item):
@@ -139,10 +146,6 @@ def load_json_file(  # noqa: C901
         except Exception:
             stats['validation_err'] += 1
             continue
-
-        # Process item
-        if transform_func:
-            item = transform_func(item)
 
         # Calculate unique key
         try:
@@ -155,6 +158,10 @@ def load_json_file(  # noqa: C901
         if not key:
             stats['empty_keys'] += 1
             continue
+
+        # Process item
+        if transform_func:
+            item = transform_func(item)
 
         if key in local_db:
             stats['duplicate_keys'] += 1
@@ -172,6 +179,8 @@ def load_json_file(  # noqa: C901
         stats['time'] = float(f'{t1-t0:.3f}')
         print(f'\nStatistics: {stats}')
         print(f'Loaded {len(local_db):,} items, added {len(db_data) - isize:,} new items.\n')
+
+    return local_db
 
 
 def wc_lines(file_name: str) -> int:
