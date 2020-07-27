@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from pathlib import Path
+from functools import partial
 
 from .load import load_files
 from .export import export_db
@@ -10,6 +11,7 @@ def parse_args():
     cmdline = ArgumentParser()
     cmdline.add_argument('files', nargs='+')
     cmdline.add_argument('-n', '--limit', type=int, help='stop after number of items')
+    cmdline.add_argument('--limit-lines', type=int, help='stop after number of lines')
     cmdline.add_argument('-k', '--keys', action='append', default=[])
     cmdline.add_argument('-c', '--config', default={}, help='Python config file with keys, filters')
     cmdline.add_argument('-e', '--export', type=Path, help='interact with the DB')
@@ -37,13 +39,19 @@ if __name__ == '__main__':
     if not opts.noconfig and not opts.keys and not opts.config:
         print('Warning: The KEYS are empty!')
 
+    partial_call = partial(
+        load_files,
+        opts.files,
+        opts.keys,
+        limit=opts.limit,
+        limit_lines=opts.limit_lines,
+        verbose=opts.verbose,
+    )
+
     if opts.export:
-        db = load_files(opts.files, opts.limit, opts.keys, opts.config,
-                        verbose=opts.verbose)
+        db = partial_call(config=opts.config)
         export_db(db.values(), opts.export)
     elif opts.noconfig:
-        load_files(opts.files, opts.limit,
-                   verbose=opts.verbose, interact=opts.interact)
+        partial_call(interact=opts.interact)
     else:
-        load_files(opts.files, opts.limit, opts.keys, opts.config,
-                   verbose=opts.verbose, interact=opts.interact)
+        partial_call(config=opts.config, interact=opts.interact)
