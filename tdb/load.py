@@ -116,7 +116,10 @@ def load_json_file(  # noqa: C901
     if limit_lines and limit_lines < nr_lines:
         nr_lines = limit_lines
 
+    rel_name = os.path.relpath(file_name, ROOT_FOLDER)
+
     if verbose:
+        print(f'Loading {nr_lines:,} lines from "{rel_name}" ...')
         current_perc = 0.0
         if nr_lines >= 100:
             perc1 = nr_lines / 100.0
@@ -124,10 +127,6 @@ def load_json_file(  # noqa: C901
         else:
             perc1 = 1
             progress_chr = (100 // nr_lines) * '#'
-
-    rel_name = os.path.relpath(file_name, ROOT_FOLDER)
-    if verbose:
-        print(f'Loading {nr_lines:,} lines from "{rel_name}" ...')
 
     stats = {
         'time': .0,
